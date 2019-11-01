@@ -20,6 +20,9 @@ import sys
 sys.path.insert(0,BASE_DIR)
 sys.path.insert(0,os.path.join(BASE_DIR, 'apps'))
 sys.path.insert(0,os.path.join(BASE_DIR, 'extra_apps'))
+# 支付宝相关的key
+private_key_path = os.path.join(BASE_DIR, 'apps/trade/keys/private_2048.txt')
+ali_pub_key_path = os.path.join(BASE_DIR, 'apps/trade/keys/alipay_key_2048.txt')
 
 
 
@@ -32,7 +35,7 @@ SECRET_KEY = 'gwh(361pij0v#m-a@ngi@_=si_yg!nlq+znofwr_uns=+7dz#p'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 #重载系统的用户，让UserProfile生效
 AUTH_USER_MODEL = 'users.UserProfile'
@@ -171,9 +174,18 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         #'rest_framework_jwt.authentication.JSONWebTokenAuthentication'
-    )
-
+    ),
+   #限速设置
+    'DEFAULT_THROTTLE_CLASSES': (
+            'rest_framework.throttling.AnonRateThrottle',   #未登陆用户
+            'rest_framework.throttling.UserRateThrottle'    #登陆用户
+        ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '3/minute',         #每分钟可以请求两次
+        'user': '5/minute'          #每分钟可以请求五次
+    }
 }
+
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -192,3 +204,16 @@ APIKEY = "xxxxx327d4be01608xxxxxxxxxx"
 
 # 手机号码正则表达式
 REGEX_MOBILE = "^1[358]\d{9}$|^147\d{8}$|^176\d{8}$"
+
+#缓存配置
+REST_FRAMEWORK_EXTENSIONS = {
+    'DEFAULT_CACHE_RESPONSE_TIMEOUT': 5   #5s过期，时间自己可以随便设定
+}
+
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+sentry_sdk.init(
+    dsn="http://d554823960004c0cabaa226ae76fb3f8@10.39.36.90:9000/2",
+    integrations=[DjangoIntegration()]
+)

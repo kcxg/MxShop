@@ -19,10 +19,10 @@ from rest_framework_jwt.views import obtain_jwt_token
 import xadmin
 from django.views.static import serve
 from MxShop.settings import MEDIA_ROOT
-from goods.views import GoodsListViewSet
+from goods.views import GoodsListViewSet, BannerViewset, IndexCategoryViewset
 from rest_framework.documentation import include_docs_urls
 from goods.views import GoodsListViewSet,CategoryViewSet
-from trade.views import ShoppingCartViewset
+from trade.views import ShoppingCartViewset, OrderViewset, AlipayView
 from user_operation.views import UserFavViewset, LeavingMessageViewset, AddressViewset
 from users.views import UserViewset
 from rest_framework.routers import DefaultRouter
@@ -51,8 +51,25 @@ router.register(r'address',AddressViewset , base_name="address")
 
 # 配置购物车的url
 router.register(r'shopcarts', ShoppingCartViewset, base_name="shopcarts")
+
+# 配置订单的url
+router.register(r'orders', OrderViewset, base_name="orders")
+
+# 配置支付宝支付相关接口的url
+path('alipay/return/', AlipayView.as_view())
+
+# 配置首页轮播图的url
+router.register(r'banners', BannerViewset, base_name="banners")
+
+# 首页系列商品展示url
+router.register(r'indexgoods', IndexCategoryViewset, base_name="indexgoods")
+
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
 urlpatterns = [
 
+    path('sentry-debug/', trigger_error),
     re_path('^', include(router.urls)),
 
     path('xadmin/', xadmin.site.urls),
